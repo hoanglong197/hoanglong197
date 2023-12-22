@@ -1,39 +1,120 @@
 #include <stdio.h>
-#include <conio.h>
 #include <stdlib.h>
 
-void recursiveArray(int arr[], int n, int index);
-void inputStudentsAndSort();
+// Struct SinhVien
+struct SinhVien {
+    char mssv[20];
+    char hoten[50];
+    float diemTB;
+};
+
+// Hàm ki?m tra s? nguyên t?
+int isPrime(int num) {
+    if (num < 2) {
+        return 0;
+    }
+    for (int i = 2; i * i <= num; ++i) {
+        if (num % i == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// Hàm d? quy d? nh?p xu?t m?ng và tính t?ng s? nguyên t?
+void recursiveArray(int arr[], int n, int index, int *sumPrime) {
+    if (index < n) {
+        printf("Nhap phan tu thu %d: ", index + 1);
+        scanf("%d", &arr[index]);
+
+        if (isPrime(arr[index])) {
+            *sumPrime += arr[index];
+        }
+
+        recursiveArray(arr, n, index + 1, sumPrime);
+    }
+}
+
+// Hàm nh?p xu?t danh sách sinh viên
+void inputStudentsAndSort() {
+    int n;
+    printf("Nhap so luong sinh vien: ");
+    scanf("%d", &n);
+
+    struct SinhVien *dsSinhVien = (struct SinhVien *)malloc(n * sizeof(struct SinhVien));
+
+    // Nh?p thông tin sinh viên
+    for (int i = 0; i < n; ++i) {
+        printf("Nhap thong tin sinh vien thu %d:\n", i + 1);
+        printf("MSSV: ");
+        scanf("%s", dsSinhVien[i].mssv);
+        printf("Ho ten: ");
+        getchar(); // Ð?c kí t? '\n' còn th?a t? l?n nh?p tru?c
+        gets(dsSinhVien[i].hoten);
+        printf("Diem TB: ");
+        scanf("%f", &dsSinhVien[i].diemTB);
+    }
+
+    // Luu danh sách sinh viên vào file
+    FILE *file = fopen("D:\\dssinhvien.txt", "w");
+    if (file == NULL) {
+        printf("Khong the mo file.\n");
+        return;
+    }
+
+    fprintf(file, "%d\n", n);
+    for (int i = 0; i < n; ++i) {
+        fprintf(file, "%s %s %.2f\n", dsSinhVien[i].mssv, dsSinhVien[i].hoten, dsSinhVien[i].diemTB);
+    }
+
+    fclose(file);
+
+    // S?p x?p danh sách sinh viên theo di?m TB
+    for (int i = 0; i < n - 1; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            if (dsSinhVien[i].diemTB > dsSinhVien[j].diemTB) {
+                struct SinhVien temp = dsSinhVien[i];
+                dsSinhVien[i] = dsSinhVien[j];
+                dsSinhVien[j] = temp;
+            }
+        }
+    }
+
+    // In danh sách sinh viên theo th? t? tang d?n c?a c?t DiemTB
+    printf("\nDanh sach sinh vien theo thu tu tang dan cua DiemTB:\n");
+    for (int i = 0; i < n; ++i) {
+        printf("%s %s %.2f\n", dsSinhVien[i].mssv, dsSinhVien[i].hoten, dsSinhVien[i].diemTB);
+    }
+
+    free(dsSinhVien);
+}
 
 int main() {
     int choice;
     do {
-        system("cls"); // Xóa màn hình console
         printf("===== MENU =====\n");
-        printf("1. Sử dụng đệ quy để nhập xuất mảng và tính tổng số nguyên tố\n");
-        printf("2. Nhập và sắp xếp danh sách sinh viên\n");
-        printf("0. Thoát\n");
-        printf("Nhập lựa chọn: ");
+        printf("1. Su dung de quy de nhap-xuat mang va tinh tong so nguyen to\n");
+        printf("2. Nhap danh sach sinh vien va sap xep theo DiemTB\n");
+        printf("0. Thoat\n");
+        printf("Nhap lua chon: ");
         scanf("%d", &choice);
 
         switch (choice) {
             case 1: {
                 int n;
-                printf("Nhập số phần tử của mảng: ");
+                printf("Nhap so phan tu cua mang: ");
                 scanf("%d", &n);
                 int arr[n];
+                int sumPrime = 0;
 
-                printf("Nhập các phần tử của mảng:\n");
-                recursiveArray(arr, n, 0);
+                recursiveArray(arr, n, 0, &sumPrime);
 
-                // Hiển thị mảng và tính tổng số nguyên tố
-                // Bạn có thể viết các hàm khác để thực hiện công việc này
-                // Tạm thời, mình sẽ in ra các giá trị để bạn hiểu cấu trúc chương trình
-                printf("\nMảng vừa nhập: ");
-                for (int i = 0; i < n; i++) {
+                printf("\nMang vua nhap: ");
+                for (int i = 0; i < n; ++i) {
                     printf("%d ", arr[i]);
                 }
-                printf("\n");
+
+                printf("\nTong cac so nguyen to trong mang: %d\n", sumPrime);
                 break;
             }
             case 2: {
@@ -41,33 +122,14 @@ int main() {
                 break;
             }
             case 0: {
-                printf("Chương trình kết thúc.\n");
+                printf("Thoat chuong trinh.\n");
                 break;
             }
             default:
-                printf("Lựa chọn không hợp lệ. Vui lòng chọn lại.\n");
+                printf("Lua chon khong hop le. Vui long chon lai.\n");
         }
 
-        printf("\nNhấn phím bất kỳ để tiếp tục...");
-        getch(); // Đợi người dùng nhấn một phím bất kỳ
     } while (choice != 0);
 
     return 0;
-}
-
-// Hàm đệ quy để nhập xuất mảng và tính tổng số nguyên tố
-void recursiveArray(int arr[], int n, int index) {
-    if (index < n) {
-        printf("Nhập phần tử thứ %d: ", index + 1);
-        scanf("%d", &arr[index]);
-        recursiveArray(arr, n, index + 1);
-    }
-}
-
-// Hàm nhập và sắp xếp danh sách sinh viên
-void inputStudentsAndSort() {
-    // Bạn có thể thêm mã nguồn cho chức năng này tương tự như bài tập trước
-    // Sử dụng các hàm để nhập thông tin sinh viên và sắp xếp danh sách
-    // In danh sách sinh viên ra màn hình
-    printf("Chức năng này chưa được triển khai. Bạn có thể thêm mã nguồn cho chức năng này.\n");
 }
